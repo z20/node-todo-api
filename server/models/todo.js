@@ -1,5 +1,7 @@
 var mongoose = require('mongoose');
 
+mongoose.plugin(schema => { schema.options.usePushEach = true });
+
 var Todo = mongoose.model('Todo', {
   text: {
     type: String,
