@@ -4,9 +4,6 @@ const jwt = require('jsonwebtoken');
 const _ = require('lodash');
 const bcrypt = require('bcryptjs');
 
-
-mongoose.plugin(schema => { schema.options.usePushEach = true });
-
 var UserSchema = new mongoose.Schema({
   email: {
     type: String,
@@ -48,20 +45,10 @@ UserSchema.methods.generateAuthToken = function () {
   var access = 'auth';
   var token = jwt.sign({_id: user._id.toHexString(), access}, 'abc123').toString();
 
-  user.tokens = user.tokens.concat([{access, token}]);
+  user.tokens.push({access, token});
 
   return user.save().then(() => {
     return token;
-  });
-};
-
-UserSchema.methods.removeToken = function (token) {
-  var user = this;
-
-  return user.update({
-    $pull: {
-      tokens: {token}
-    }
   });
 };
 
@@ -91,6 +78,7 @@ UserSchema.statics.findByCredentials = function (email, password) {
     }
 
     return new Promise((resolve, reject) => {
+      // Use bcrypt.compare to compare password and user.password
       bcrypt.compare(password, user.password, (err, res) => {
         if (res) {
           resolve(user);
